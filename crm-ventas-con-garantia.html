@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Ventas con Garantía</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #1a1a1a; }
+.container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.header h1 { font-size: 1.5rem; font-weight: 600; }
+.header p { font-size: 0.875rem; color: #666; margin-top: 0.25rem; }
+.btn { background: #1a1a1a; color: white; border: none; padding: 0.625rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; }
+.btn:hover { background: #333; }
+.btn-secondary { background: transparent; color: #1a1a1a; border: 1px solid #ddd; }
+.btn-secondary:hover { background: #f5f5f5; }
+.btn-danger { background: transparent; color: #dc2626; border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fef2f2; }
+.btn-wa { background: #25D366; color: white; padding: 0.5rem 0.875rem; font-size: 0.8125rem; }
+.btn-wa:hover { background: #20ba5a; }
+.tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid #e5e5e5; margin-bottom: 1.5rem; overflow-x: auto; }
+.tab { background: transparent; border: none; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; color: #666; font-size: 0.875rem; }
+.tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.metric { background: #f9fafb; border-radius: 8px; padding: 1rem; }
+.metric-label { font-size: 0.75rem; color: #666; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-value { font-size: 1.75rem; font-weight: 600; }
+.banner { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 0.875rem 1rem; margin-bottom: 1.5rem; color: #dc2626; font-size: 0.875rem; font-weight: 500; }
+.filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.filters input, .filters select { flex: 1; min-width: 150px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.875rem; }
+.table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #e5e5e5; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+th { text-align: left; padding: 0.75rem; border-bottom: 1px solid #e5e5e5; color: #666; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; background: #fafafa; }
+td { padding: 0.75rem; border-bottom: 1px solid #f5f5f5; }
+tr:hover { background: #fafafa; cursor: pointer; }
+.badge { display: inline-block; padding: 0.25rem 0.625rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
+.badge-caliente { background: #fef2f2; color: #dc2626; }
+.badge-tibio { background: #fef3c7; color: #d97706; }
+.badge-frio { background: #eff6ff; color: #2563eb; }
+.badge-stage { background: #f5f5f5; color: #666; }
+.badge-vendido { background: #f0fdf4; color: #16a34a; }
+.badge-perdido { background: #fef2f2; color: #dc2626; }
+.badge-alert { background: #fef3c7; color: #d97706; padding: 0.125rem 0.5rem; }
+.badge-alert-hot { background: #fef2f2; color: #dc2626; padding: 0.125rem 0.5rem; }
+.empty { text-align: center; padding: 3rem 1rem; color: #999; font-size: 0.875rem; }
+.modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-start; justify-content: center; padding: 2rem 1rem; z-index: 1000; overflow-y: auto; }
+.modal.show { display: flex; }
+.modal-content { background: white; border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+.modal-content h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; }
+.mini-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid #e5e5e5; margin-bottom: 1rem; }
+.mini-tab { background: transparent; border: none; padding: 0.5rem 0.75rem; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.875rem; color: #666; }
+.mini-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.375rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.field input, .field select, .field textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.875rem; font-family: inherit; }
+.field textarea { min-height: 70px; resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.modal-actions { display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e5e5; gap: 0.75rem; flex-wrap: wrap; }
+.modal-actions-right { display: flex; gap: 0.5rem; }
+.msg-box { background: #f9fafb; border: 1px solid #e5e5e5; border-radius: 8px; padding: 0.875rem; font-size: 0.8125rem; white-space: pre-wrap; line-height: 1.6; margin-top: 0.5rem; }
+.msg-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.help { font-size: 0.75rem; color: #999; margin-top: 0.5rem; font-style: italic; }
+.loading { text-align: center; padding: 2rem; color: #666; }
+.kanban { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; overflow-x: auto; }
+.kanban-col { background: #f9fafb; border-radius: 8px; padding: 0.75rem; min-height: 250px; }
+.kanban-header { font-size: 0.75rem; font-weight: 500; color: #666; margin-bottom: 0.75rem; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.5px; }
+.kanban-card { background: white; border: 1px solid #e5e5e5; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; cursor: pointer; font-size: 0.8125rem; }
+.kanban-card:hover { border-color: #1a1a1a; }
+.kanban-name { font-weight: 500; margin-bottom: 0.25rem; }
+.kanban-meta { color: #666; font-size: 0.75rem; }
+@media (max-width: 768px) { .row2, .row3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>CRM Ventas con Garantía</h1>
+      <p id="status">Conectando...</p>
+    </div>
+    <button class="btn" onclick="openNew()">+ Nuevo lead</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('hoy')">Hoy</button>
+    <button class="tab" onclick="switchTab('leads')">Leads</button>
+    <button class="tab" onclick="switchTab('kanban')">Kanban</button>
+    <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
+  </div>
+
+  <div id="content"><div class="loading">Cargando datos...</div></div>
+</div>
+
+<div class="modal" id="modal"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbx9_Q8PtydXCU9sVvY6Z2dU3hVie6lJa5ET5HvXjBPHhv-LFIcp4dFAG6FRj93zsDAu/exec';
+const FIRMA = '\n\n───────────────\nDaniel Santander\nVentas con Garantía\n0981 283 287.';
+
+const SEGMENTOS = ['Sedán compacto','Sedán mediano','Sedán grande','Hatchback','SUV chica','SUV mediana','SUV grande','Pickup simple cabina','Pickup doble cabina','Minivan / furgón','Utilitario'];
+const SITUACIONES = ['No saludo','Envie info','Consulta Visita','Dijo te aviso','Interés anterior sin cierre','Sin situación'];
+const ETAPAS = ['Nuevo contacto','Contactado','Detalles enviados','Visita agendada','Pide ultimo precio','Venta cerrada','Perdido'];
+const URGENCIAS = ['Frío','Tibio','Caliente'];
+const MODALIDADES = ['A determinar','Contado','Financiación'];
+
+const MICROS = {"Sedán compacto":{pre:"Perfecto 👌 es una muy buena elección.\n• Sedán compacto ideal para el uso diario en ciudad.\n• Reconocido por su economía de combustible y bajo costo de mantenimiento.\n• Repuestos accesibles y amplia red de talleres disponibles.\n• Perfecto para quien busca un auto confiable, rendidor y sin complicaciones.\n¿Tenés unos minutos ahora para que te pase los detalles y fotos?",post:"Muy buena elección 👌\n• Tiene ese equilibrio perfecto entre practicidad, economía y confianza diaria.\n• De los que se compran para disfrutar el día a día, no para renegar.\n• Modelo reconocido por mantener su valor y responder bien con el uso.\n• Ideal si querés moverte tranquilo sin pensar en gastos sorpresa.\n¿Te gustaría coordinar para verlo con más calma o darle una vuelta? 👍"},"Sedán mediano":{pre:"Excelente elección 👌\n• Sedán mediano con el espacio y el confort que muchos buscan.\n• Reconocido por su solidez mecánica y su bajo costo de operación a largo plazo.\n• Muy bien posicionado en el mercado — fácil de revender cuando llegue el momento.\n• Un auto que combina presencia, comodidad y tranquilidad en una sola opción.\n¿Tenés unos minutos ahora para que te pase todos los detalles?",post:"Una decisión muy acertada 👌\n• Es de esos autos que te dan confianza desde el primer día.\n• Cómodo para viajes largos y práctico para el uso diario — lo mejor de los dos mundos.\n• Reconocido por su durabilidad y por mantener su valor en el tiempo.\n• Un clásico que no pasa de moda y siempre tiene demanda.\n¿Coordinamos para que lo puedas ver en persona y confirmar que es lo que buscabas? 👍"},"Hatchback":{pre:"Muy buena elección 👌\n• Hatchback práctico, ágil y perfecto para moverse en ciudad sin complicaciones.\n• Fácil de estacionar, económico en combustible y con mantenimiento muy accesible.\n• Modelo con amplia disponibilidad de repuestos y talleres especializados.\n• Para quien quiere lo justo y necesario sin pagar de más — una decisión muy inteligente.\n¿Tenés unos minutos ahora para que te pase fotos y detalles?",post:"Buenísima opción 👌\n• Ágil, práctico y con ese tamaño ideal para el día a día en ciudad.\n• De esos autos que hacen todo bien sin complicarte la vida ni el bolsillo.\n• Fácil de manejar, fácil de mantener, fácil de disfrutar.\n• Una elección que con el tiempo vas a agradecer por lo simple y confiable que es.\n¿Coordinamos para verlo en persona y que le des una vuelta? 👍"},"SUV mediana":{pre:"Excelente gusto 👌\n• SUV mediana con el espacio, el confort y la presencia que este segmento tiene que tener.\n• Ideal para familias o para quien quiere espacio real sin sacrificar dinámica de manejo.\n• Muy bien equipada, con tecnología de seguridad de primer nivel y buena eficiencia.\n• Un auto que proyecta solidez y que acompaña bien a largo plazo.\n¿Tenés unos minutos para que te pase todos los detalles y fotos?",post:"Una elección muy acertada 👌\n• Espacio real, confort en ruta y esa sensación de seguridad que solo las SUV buenas dan.\n• De las que se compran pensando en el largo plazo y no decepcionan con el tiempo.\n• Perfecta para viajes, para la familia y para el día a día — lo cubre todo sin esfuerzo.\n• Un auto que se siente premium desde el primer kilómetro.\n¿Coordinamos para verla en persona y que te subas a sentirla? 👍"},"Pickup doble cabina":{pre:"Excelente elección 👌\n• Pickup doble cabina — el equilibrio perfecto entre capacidad de trabajo y confort familiar.\n• Tracción disponible cuando la necesitás, espacio para cuatro personas y carga sin límites.\n• Motor potente y confiable, con excelente respaldo de marca y repuestos accesibles.\n• Para quien quiere una sola unidad que lo haga todo y lo haga bien.\n¿Tenés unos minutos para que te pase los detalles y fotos completos?",post:"Muy buena elección 👌\n• Esa combinación difícil de encontrar entre trabajo serio y viaje cómodo en una sola unidad.\n• Espacio para toda la familia más capacidad de carga cuando el trabajo lo pide.\n• Potente, confiable y de los que mantienen su valor mejor que casi cualquier otra opción.\n• Un auto que trabaja con vos y disfruta con vos — sin pedirte que elijas entre los dos.\n¿Coordinamos para verla en persona y que le des una vuelta? 👍"}};
+
+const BANCO = {"Dijo te aviso|0|Contado":"¡Hola [NOMBRE]! 😊 Sé que quedamos en que me avisabas. ¿Tenés un momento ahora? Me llegó una info sobre el [AUTO] que puede ayudarte a decidir — y el precio contado sigue vigente.","Dijo te aviso|0|Financiación":"¡Hola [NOMBRE]! 😊 Sé que quedamos en que me avisabas. ¿Tenés un momento ahora? Me llegó una novedad sobre financiación del [AUTO] que puede interesarte.","Dijo te aviso|1|Contado":"¡Hola [NOMBRE]! El [AUTO] está en Asunción/Gran Asunción. ¿De qué zona me contactás? Quiero facilitarte el proceso — y si lo cerramos contado va a ser lo más rápido y simple. 😊","Dijo te aviso|1|Financiación":"¡Hola [NOMBRE]! El [AUTO] está en Asunción/Gran Asunción. ¿De qué zona me contactás? Quiero facilitarte el proceso y explicarte las opciones de financiación disponibles. 😊","Dijo te aviso|2|Contado":"¡Hola [NOMBRE]! El precio contado del [AUTO] es el mejor del mercado ahora mismo. Por si te sirve para calcularlo y decidir con tranquilidad. 😊","Dijo te aviso|2|Financiación":"¡Hola [NOMBRE]! Tenemos un plan de financiación para el [AUTO] con cuotas muy accesibles este mes. Por si te sirve para calcularlo y decidir con tranquilidad. 😊","Dijo te aviso|3|Contado":"¡Hola [NOMBRE]! El [AUTO] sigue disponible pero hay bastante consulta. Si te decidís al contado podemos cerrar rápido y sin complicaciones. Avisame y te lo reservo.","Dijo te aviso|3|Financiación":"¡Hola [NOMBRE]! El [AUTO] sigue disponible pero hay bastante consulta. Si te decidís podemos iniciar el trámite de financiación esta semana. Avisame y te lo reservo.","Consulta Visita|1|Contado":"¡Hola [NOMBRE]! El [AUTO] está en Asunción/Gran Asunción. ¿De qué zona venís? Te coordino la visita lo más cómodo posible — y si cerramos contado el mismo día mejor para los dos. 😊","Consulta Visita|1|Financiación":"¡Hola [NOMBRE]! El [AUTO] está en Asunción/Gran Asunción. ¿De qué zona venís? Podemos ver el vehículo y revisar juntos las opciones de financiación en la misma visita. 😊","Consulta Visita|2|Contado":"¡Hola [NOMBRE]! El [AUTO] tiene bastante interés esta semana. Si cerramos contado podemos agilizar todo sin trámites. ¿Puedo hacer algo para ayudarte a avanzar?","Consulta Visita|2|Financiación":"¡Hola [NOMBRE]! El [AUTO] tiene bastante interés esta semana. Si la financiación es el camino, podemos iniciar los trámites esta semana misma. ¿Puedo hacer algo para ayudarte a avanzar?","Interés anterior sin cierre|0|Contado":"¡Hola [NOMBRE]! Soy Daniel, hablamos antes por el [AUTO]. Me acordé de vos porque me acaba de ingresar algo muy similar. ¿Tenés unos minutos ahora para que te cuente? Hay una muy buena condición contado. 😊","Interés anterior sin cierre|1|Contado":"¡Hola [NOMBRE]! El vehículo está en Asunción/Gran Asunción. ¿Seguís en la misma zona? Quería facilitarte la visita — si lo cerramos contado podemos agilizar todo el mismo día. 😊"};
+
+let leads = [];
+let currentTab = 'hoy';
+let editingLead = null;
+let modalTab = 'info';
+
+function today() { return new Date().toISOString().slice(0,10); }
+function esc(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function loadLeads() {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'getLeads'})
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      leads = data.leads.sort((a,b) => (a.ProximoContacto||'') > (b.ProximoContacto||'') ? 1 : -1);
+      document.getElementById('status').textContent = `${leads.length} leads cargados`;
+    } else {
+      document.getElementById('status').textContent = 'Error: ' + data.message;
+    }
+  } catch(e) {
+    document.getElementById('status').textContent = 'Error de conexión';
+    console.error(e);
+  }
+  render();
+}
+
+async function saveLead(lead) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'saveLead', lead: lead})
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      await loadLeads();
+    } else {
+      alert('Error al guardar: ' + data.message);
+    }
+  } catch(e) {
+    alert('Error de conexión al guardar');
+    console.error(e);
+  }
+}
+
+async function deleteLead(id) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'deleteLead', id: id})
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      await loadLeads();
+    } else {
+      alert('Error al eliminar: ' + data.message);
+    }
+  } catch(e) {
+    alert('Error de conexión al eliminar');
+    console.error(e);
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase() === tab));
+  render();
+}
+
+function render() {
+  if (currentTab === 'hoy') renderHoy();
+  else if (currentTab === 'leads') renderLeads();
+  else if (currentTab === 'kanban') renderKanban();
+  else if (currentTab === 'dashboard') renderDashboard();
+}
+
+function renderHoy() {
+  const hoy = today();
+  const alertas = leads.filter(l => Number(l.Toque||0) === 0 && l.Etapa !== 'Venta cerrada' && l.Etapa !== 'Perdido');
+  const calientes = leads.filter(l => l.Urgencia === 'Caliente' && l.Etapa !== 'Venta cerrada' && l.Etapa !== 'Perdido' && Number(l.Toque||0) > 0);
+  const pendientes = leads.filter(l => l.ProximoContacto && l.ProximoContacto <= hoy && Number(l.Toque||0) > 0 && l.Urgencia !== 'Caliente' && l.Etapa !== 'Venta cerrada' && l.Etapa !== 'Perdido');
+
+  let html = '';
+  if (alertas.length > 0) {
+    html += `<div class="banner">⚠️ Alerta 45 min — ${alertas.length} lead${alertas.length>1?'s':''} con Toque 0 pendiente</div>`;
+  }
+
+  html += `<div class="metrics">
+    <div class="metric"><div class="metric-label">Alerta 45 min</div><div class="metric-value">${alertas.length}</div></div>
+    <div class="metric"><div class="metric-label">Calientes</div><div class="metric-value">${calientes.length}</div></div>
+    <div class="metric"><div class="metric-label">Pendientes hoy</div><div class="metric-value">${pendientes.length}</div></div>
+    <div class="metric"><div class="metric-label">Total activos</div><div class="metric-value">${leads.filter(l=>l.Etapa!=='Venta cerrada'&&l.Etapa!=='Perdido').length}</div></div>
+  </div>`;
+
+  function lista(titulo, arr, color) {
+    if (arr.length === 0) return '';
+    return `<h3 style="font-size:0.875rem;font-weight:500;margin:0 0 0.75rem;color:${color};">${titulo} (${arr.length})</h3>
+      <div class="table-container" style="margin-bottom:1.5rem;">
+        <table>
+          <thead><tr><th>Nombre</th><th>Auto</th><th>Situación</th><th>Toque</th><th>Modalidad</th><th></th></tr></thead>
+          <tbody>${arr.map(l=>`<tr onclick="openEdit('${l.ID}')">
+            <td><strong>${esc(l.Nombre)}</strong></td>
+            <td>${esc(l.Auto||'—')}</td>
+            <td>${esc(l.Situacion||'—')}</td>
+            <td>${l.Toque||0}</td>
+            <td>${esc(l.Modalidad||'—')}</td>
+            <td><button class="btn-wa" onclick="event.stopPropagation();openEdit('${l.ID}')">Msj</button></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
+  html += lista('🔴 Alerta 45 min', alertas, '#dc2626');
+  html += lista('🟠 Calientes', calientes, '#d97706');
+  html += lista('📋 Pendientes hoy', pendientes, '#2563eb');
+
+  if (alertas.length === 0 && calientes.length === 0 && pendientes.length === 0) {
+    html += '<div class="empty">¡Al día! No hay pendientes urgentes.</div>';
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderLeads() {
+  const html = `
+    <div class="filters">
+      <input type="text" id="q" placeholder="Buscar..." oninput="renderLeads()">
+      <select id="fStage" onchange="renderLeads()"><option value="">Todas etapas</option>${ETAPAS.map(s=>`<option>${s}</option>`).join('')}</select>
+      <select id="fTemp" onchange="renderLeads()"><option value="">Toda temp.</option>${URGENCIAS.map(s=>`<option>${s}</option>`).join('')}</select>
+      <select id="fSeg" onchange="renderLeads()"><option value="">Todo segmento</option>${SEGMENTOS.map(s=>`<option>${s}</option>`).join('')}</select>
+    </div>
+    ${renderLeadsTable()}
+  `;
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderLeadsTable() {
+  const q = (document.getElementById('q')?.value||'').toLowerCase();
+  const fStage = document.getElementById('fStage')?.value||'';
+  const fTemp = document.getElementById('fTemp')?.value||'';
+  const fSeg = document.getElementById('fSeg')?.value||'';
+
+  const filtrados = leads.filter(l => {
+    if (fStage && l.Etapa !== fStage) return false;
+    if (fTemp && l.Urgencia !== fTemp) return false;
+    if (fSeg && l.Segmento !== fSeg) return false;
+    if (q) {
+      const hay = `${l.Nombre||''} ${l.Auto||''} ${l.Telefono||''} ${l.Zona||''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtrados.length === 0) return '<div class="empty">Sin resultados</div>';
+
+  function tempBadge(t) { const c=t==='Caliente'?'badge-caliente':t==='Tibio'?'badge-tibio':'badge-frio'; return `<span class="badge ${c}">${esc(t||'Frío')}</span>`; }
+  function stageBadge(s) { let c='badge-stage'; if(s==='Venta cerrada')c='badge-vendido'; else if(s==='Perdido')c='badge-perdido'; return `<span class="badge ${c}">${esc(s||'Nuevo contacto')}</span>`; }
+
+  return `<div class="table-container">
+    <table>
+      <thead><tr><th>Nombre</th><th>Teléfono</th><th>Auto</th><th>Situación</th><th>Etapa</th><th>Temp</th><th>Toque</th><th>Próx.</th><th></th></tr></thead>
+      <tbody>${filtrados.map(l=>{
+        const vencida = l.ProximoContacto && l.ProximoContacto <= today() && l.Etapa !== 'Venta cerrada' && l.Etapa !== 'Perdido';
+        const alerta = Number(l.Toque||0) === 0;
+        const pr = l.ProximoContacto ? (alerta ? `<span class="badge-alert-hot">${esc(l.ProximoContacto)}</span>` : vencida ? `<span class="badge-alert">${esc(l.ProximoContacto)}</span>` : esc(l.ProximoContacto)) : '—';
+        return `<tr onclick="openEdit('${l.ID}')">
+          <td><strong>${esc(l.Nombre)}</strong></td>
+          <td>${esc(l.Telefono||'')}</td>
+          <td>${esc(l.Auto||'—')}</td>
+          <td>${esc(l.Situacion||'—')}</td>
+          <td>${stageBadge(l.Etapa)}</td>
+          <td>${tempBadge(l.Urgencia)}</td>
+          <td>${l.Toque||0}</td>
+          <td>${pr}</td>
+          <td><button class="btn-wa" onclick="event.stopPropagation();openEdit('${l.ID}')">Abrir</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderKanban() {
+  const cols = ETAPAS.map(et => {
+    const items = leads.filter(l => (l.Etapa||'Nuevo contacto') === et);
+    function tempBadge(t) { const c=t==='Caliente'?'badge-caliente':t==='Tibio'?'badge-tibio':'badge-frio'; return `<span class="badge ${c}">${esc(t||'Frío')}</span>`; }
+    return `<div class="kanban-col">
+      <div class="kanban-header"><span>${esc(et)}</span><span>${items.length}</span></div>
+      ${items.map(l=>`<div class="kanban-card" onclick="openEdit('${l.ID}')">
+        <div class="kanban-name">${esc(l.Nombre)}</div>
+        <div class="kanban-meta">${esc(l.Auto||'—')}</div>
+        <div style="margin-top:0.375rem;">${tempBadge(l.Urgencia)}</div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+  document.getElementById('content').innerHTML = `<div class="kanban">${cols}</div>`;
+}
+
+function renderDashboard() {
+  const total = leads.length;
+  const activos = leads.filter(l => l.Etapa !== 'Venta cerrada' && l.Etapa !== 'Perdido').length;
+  const vendidos = leads.filter(l => l.Etapa === 'Venta cerrada').length;
+  const cerrados = leads.filter(l => l.Etapa === 'Venta cerrada' || l.Etapa === 'Perdido').length;
+  const conv = cerrados > 0 ? Math.round((vendidos/cerrados)*100) : 0;
+
+  const porEtapa = ETAPAS.map(s => ({l:s, c:leads.filter(x=>(x.Etapa||'Nuevo contacto')===s).length}));
+  const maxE = Math.max(...porEtapa.map(p=>p.c), 1);
+
+  document.getElementById('content').innerHTML = `
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Total</div><div class="metric-value">${total}</div></div>
+      <div class="metric"><div class="metric-label">Activos</div><div class="metric-value">${activos}</div></div>
+      <div class="metric"><div class="metric-label">Vendidos</div><div class="metric-value">${vendidos}</div></div>
+      <div class="metric"><div class="metric-label">Conversión</div><div class="metric-value">${conv}%</div></div>
+    </div>
+    <div style="background:white;border:1px solid #e5e5e5;border-radius:12px;padding:1.5rem;">
+      <h4 style="margin:0 0 1rem;font-size:1rem;font-weight:500;">Leads por etapa</h4>
+      ${porEtapa.map(p=>`<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;font-size:0.875rem;">
+        <span style="flex:0 0 150px;color:#666;">${esc(p.l)}</span>
+        <div style="flex:1;background:#f5f5f5;height:20px;border-radius:4px;overflow:hidden;"><div style="background:#2563eb;height:100%;width:${(p.c/maxE)*100}%;"></div></div>
+        <span style="flex:0 0 32px;text-align:right;font-weight:500;">${p.c}</span>
+      </div>`).join('')}
+    </div>
+  `;
+}
+
+function openNew() {
+  editingLead = null;
+  modalTab = 'info';
+  showModal({
+    ID: 'L'+Date.now(),
+    Nombre: '', Telefono: '', Auto: '', Segmento: 'Sedán mediano',
+    Situacion: 'No saludo', Etapa: 'Nuevo contacto', Urgencia: 'Tibio',
+    Zona: '', Ingreso: today(), UltimoContacto: today(), Toque: 0,
+    Modalidad: 'Contado', ProximoContacto: today(), Observaciones: '', Notas: '', Historial: ''
+  });
+}
+
+function openEdit(id) {
+  const l = leads.find(x => x.ID === id);
+  if (!l) return;
+  editingLead = JSON.parse(JSON.stringify(l));
+  modalTab = 'msg';
+  showModal(editingLead);
+}
+
+function showModal(lead) {
+  window._lead = lead;
+  renderModal();
+}
+
+function renderModal() {
+  const l = window._lead;
+  const isEdit = editingLead !== null;
+
+  const tabInfo = `
+    <div class="row2">
+      <div class="field"><label>Nombre *</label><input id="fn-nombre" value="${esc(l.Nombre)}"></div>
+      <div class="field"><label>Teléfono</label><input id="fn-telefono" value="${esc(l.Telefono)}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Auto</label><input id="fn-auto" value="${esc(l.Auto)}"></div>
+      <div class="field"><label>Segmento</label><select id="fn-segmento">${SEGMENTOS.map(s=>`<option ${s===l.Segmento?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Situación</label><select id="fn-situacion">${SITUACIONES.map(s=>`<option ${s===l.Situacion?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Etapa</label><select id="fn-etapa">${ETAPAS.map(s=>`<option ${s===l.Etapa?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Urgencia</label><select id="fn-urgencia">${URGENCIAS.map(s=>`<option ${s===l.Urgencia?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Modalidad</label><select id="fn-modalidad">${MODALIDADES.map(s=>`<option ${s===l.Modalidad?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Toque #</label><input type="number" min="0" id="fn-toque" value="${l.Toque||0}"></div>
+      <div class="field"><label>Zona</label><input id="fn-zona" value="${esc(l.Zona)}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Últ. contacto</label><input type="date" id="fn-ultimo" value="${esc(l.UltimoContacto)}"></div>
+      <div class="field"><label>Próx. contacto</label><input type="date" id="fn-proximo" value="${esc(l.ProximoContacto)}"></div>
+    </div>
+    <div class="field"><label>Observaciones</label><textarea id="fn-obs">${esc(l.Observaciones)}</textarea></div>
+    <div class="field"><label>Notas</label><textarea id="fn-notas">${esc(l.Notas)}</textarea></div>
+  `;
+
+  function getMensaje(lead) {
+    const sit = lead.Situacion;
+    if (!['Consulta Visita','Dijo te aviso','Interés anterior sin cierre'].includes(sit)) return null;
+    const mod = lead.Modalidad === 'Financiación' ? 'Financiación' : 'Contado';
+    const toque = Number(lead.Toque||0);
+    const candidatos = [`${sit}|${toque}|${mod}`, `${sit}|${toque+1}|${mod}`, `${sit}|${Math.max(0,toque-1)}|${mod}`];
+    for (const k of candidatos) {
+      if (BANCO[k]) return BANCO[k].replace(/\[NOMBRE\]/g, lead.Nombre||'').replace(/\[AUTO\]/g, lead.Auto||'').trim();
+    }
+    return null;
+  }
+
+  const msg = getMensaje(l);
+  const micPre = MICROS[l.Segmento]?.pre;
+  const micPost = MICROS[l.Segmento]?.post;
+
+  function waLink(lead, texto) {
+    const digits = (lead.Telefono||'').replace(/\D/g,'');
+    return `https://wa.me/${digits}?text=${encodeURIComponent(texto||'')}`;
+  }
+
+  function bloque(titulo, texto, fallback) {
+    if (!texto) return `<div style="margin-bottom:1rem;"><p style="font-size:0.8125rem;font-weight:500;margin:0 0 0.25rem;">${titulo}</p><p class="help">${fallback}</p></div>`;
+    const full = texto + FIRMA;
+    const wa = waLink(l, full);
+    const id = 'msg-'+titulo.replace(/[^a-z]/gi,'');
+    return `<div style="margin-bottom:1rem;">
+      <p style="font-size:0.8125rem;font-weight:500;margin:0 0 0.375rem;">${titulo}</p>
+      <div class="msg-box" id="${id}">${esc(full)}</div>
+      <div class="msg-actions">
+        <button class="btn-secondary" onclick="copyMsg('${id}')">Copiar</button>
+        <button class="btn-wa" onclick="window.open('${wa}','_blank')">Enviar WA</button>
+      </div>
+    </div>`;
+  }
+
+  const tabMsg = `
+    <div class="help" style="margin-bottom:1rem;">Situación: <strong>${esc(l.Situacion)}</strong> · Toque: <strong>${l.Toque||0}</strong> · Modalidad: <strong>${l.Modalidad||'—'}</strong> · Segmento: <strong>${l.Segmento||'—'}</strong></div>
+    ${bloque('💬 Mensaje de seguimiento', msg, 'No hay mensaje en banco para esta combinación. Cambiá Situación / Toque / Modalidad en la pestaña Información.')}
+    ${bloque('✨ Microvalidación PRE-info', micPre, 'Sin microvalidación para este segmento.')}
+    ${bloque('✨ Microvalidación POST-info', micPost, 'Sin microvalidación para este segmento.')}
+    <p class="help">Todos los mensajes incluyen firma y reemplazo automático de [NOMBRE] y [AUTO].</p>
+  `;
+
+  document.getElementById('modal').className = 'modal show';
+  document.getElementById('modal').innerHTML = `
+    <div class="modal-content">
+      <h3>${isEdit ? esc(l.Nombre) : 'Nuevo lead'}</h3>
+      <div class="mini-tabs">
+        <button class="mini-tab ${modalTab==='info'?'active':''}" onclick="setModalTab('info')">Información</button>
+        <button class="mini-tab ${modalTab==='msg'?'active':''}" onclick="setModalTab('msg')">Mensajes</button>
+      </div>
+      <div>${modalTab==='info' ? tabInfo : tabMsg}</div>
+      <div class="modal-actions">
+        <div>${isEdit?`<button class="btn-danger" onclick="confirmDelete('${l.ID}')">Eliminar</button>`:''}</div>
+        <div class="modal-actions-right">
+          <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          ${modalTab==='info'?`<button class="btn" onclick="saveModal()">${isEdit?'Guardar':'Crear'}</button>`:''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setModalTab(t) {
+  if (modalTab === 'info') {
+    const l = window._lead;
+    const gv = id => document.getElementById(id)?.value;
+    if (gv('fn-nombre') !== undefined) {
+      l.Nombre = gv('fn-nombre')||l.Nombre;
+      l.Telefono = gv('fn-telefono');
+      l.Auto = gv('fn-auto');
+      l.Segmento = gv('fn-segmento');
+      l.Situacion = gv('fn-situacion');
+      l.Etapa = gv('fn-etapa');
+      l.Urgencia = gv('fn-urgencia');
+      l.Modalidad = gv('fn-modalidad');
+      l.Toque = parseInt(gv('fn-toque')||0);
+      l.Zona = gv('fn-zona');
+      l.UltimoContacto = gv('fn-ultimo');
+      l.ProximoContacto = gv('fn-proximo');
+      l.Observaciones = gv('fn-obs');
+      l.Notas = gv('fn-notas');
+    }
+  }
+  modalTab = t;
+  renderModal();
+}
+
+async function saveModal() {
+  const l = window._lead;
+  const gv = id => document.getElementById(id)?.value;
+  const nombre = (gv('fn-nombre')||'').trim();
+  if (!nombre) { alert('Nombre obligatorio'); return; }
+  l.Nombre = nombre;
+  l.Telefono = gv('fn-telefono');
+  l.Auto = gv('fn-auto');
+  l.Segmento = gv('fn-segmento');
+  l.Situacion = gv('fn-situacion');
+  l.Etapa = gv('fn-etapa');
+  l.Urgencia = gv('fn-urgencia');
+  l.Modalidad = gv('fn-modalidad');
+  l.Toque = parseInt(gv('fn-toque')||0);
+  l.Zona = gv('fn-zona');
+  l.UltimoContacto = gv('fn-ultimo');
+  l.ProximoContacto = gv('fn-proximo');
+  l.Observaciones = gv('fn-obs');
+  l.Notas = gv('fn-notas');
+  if (!l.Ingreso) l.Ingreso = today();
+  
+  closeModal();
+  document.getElementById('content').innerHTML = '<div class="loading">Guardando...</div>';
+  await saveLead(l);
+}
+
+async function confirmDelete(id) {
+  if (!confirm('¿Eliminar este lead?')) return;
+  closeModal();
+  document.getElementById('content').innerHTML = '<div class="loading">Eliminando...</div>';
+  await deleteLead(id);
+}
+
+function closeModal() {
+  document.getElementById('modal').className = 'modal';
+  editingLead = null;
+  window._lead = null;
+}
+
+function copyMsg(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const txt = el.textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(() => {
+      alert('Mensaje copiado al portapapeles');
+    }).catch(() => fallbackCopy(txt));
+  } else fallbackCopy(txt);
+}
+
+function fallbackCopy(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt;
+  document.body.appendChild(ta);
+  ta.select();
+  try { 
+    document.execCommand('copy');
+    alert('Mensaje copiado');
+  } catch(e) {
+    alert('Copiá el mensaje manualmente');
+  }
+  document.body.removeChild(ta);
+}
+
+loadLeads();
+</script>
+</body>
+</html>
